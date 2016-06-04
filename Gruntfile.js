@@ -14,6 +14,7 @@ module.exports = function(grunt) {
                     expect: false,
                     beforeEach: false,
                     afterEach: false,
+                    describe:false,
                     sinon: false
                 },
                 browser: true,
