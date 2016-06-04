@@ -1,0 +1,23 @@
+{
+  "name": "my_own_angular",
+  "version": "0.1.0",
+  "description": "My attempt to build angular from the start to end, following book \"Build your own angular\"",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/heobietbay/my_own_angular.git"
+  },
+  "author": "Khoa Tran",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/heobietbay/my_own_angular/issues"
+  },
+  "homepage": "https://github.com/heobietbay/my_own_angular",
+  "devDependencies": {
+    "grunt": "^1.0.1",
+    "grunt-contrib-jshint": "^1.0.0"
+  }
+}
