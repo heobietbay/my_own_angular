@@ -1,23 +1,26 @@
 /* jshint globalstrict: true */
 'use strict';
 
-function Scope(){
+function Scope() {
 
-  this.$$watchers = [];
+    this.$$watchers = [];
 }
 
-Scope.prototype.$watch = function (watchFn,listenerFn) {
-    this.$$watchers.push(
-      {
-        watchFn:watchFn,
-        listenerFn:listenerFn
-      }
-    );
+Scope.prototype.$watch = function(watchFn, listenerFn) {
+    this.$$watchers.push({
+        watchFn: watchFn,
+        listenerFn: listenerFn
+    });
 };
-Scope.prototype.$digest = function () {
-  var self = this;
-  _.forEach(this.$$watchers,function(watcher){
-       watcher.watchFn(self);
-       watcher.listenerFn();
+Scope.prototype.$digest = function() {
+    var self = this;
+    var newValue, oldValue;
+    _.forEach(this.$$watchers, function(watcher) {
+        newValue = watcher.watchFn(self);
+        oldValue = watcher.last;
+        if (newValue !== oldValue) {
+            watcher.last = newValue;
+            watcher.listenerFn(newValue, oldValue, self);
+        }
     });
 };
