@@ -7,6 +7,7 @@ function initVal() {}
 function Scope() {
 
     this.$$watchers = [];
+    this.$$lastDirtyWatch = function(){};
 }
 
 Scope.prototype.$watch = function(watchFn, listenerFn) {
@@ -16,6 +17,7 @@ Scope.prototype.$watch = function(watchFn, listenerFn) {
         last: initVal
     });
 };
+
 Scope.prototype.$$digestOnce = function() {
     var self = this;
     var newValue, oldValue, dirty;
@@ -24,6 +26,7 @@ Scope.prototype.$$digestOnce = function() {
         oldValue = watcher.last;
         if (newValue !== oldValue) {
             dirty = true;
+            self.$$lastDirtyWatch = watcher;
             watcher.last = newValue;
             if (typeof watcher.listenerFn === 'function') {
                 watcher.listenerFn(
@@ -32,13 +35,29 @@ Scope.prototype.$$digestOnce = function() {
                     self);
             }
         }
+        else // clean watch encounter
+        {
+            if(self.$$lastDirtyWatch === watcher)
+            {
+                return false;
+            }
+        }
     });
     return dirty;
 };
+
 Scope.prototype.$digest = function() {
     var dirty;
+    var maxDigestIteration = 10;
+    this.$$lastDirtyWatch = function(){};
     do {
         dirty = this.$$digestOnce();
+        maxDigestIteration--;
+
+        if(dirty && maxDigestIteration === 0 )
+        {
+            throw "10 iteration for digesting reached."; 
+        }
     }
     while (dirty);
 };

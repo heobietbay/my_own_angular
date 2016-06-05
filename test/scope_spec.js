@@ -143,6 +143,78 @@
             scope.$digest();
             expect(scope.initial).toBe('B.');
         });
+
+        it('gives up on watches upon 10 iterations', function() {
+            scope.valA = 0;
+            scope.valB = 0;
+
+            scope.$watch(
+                function watcher() {
+                    return scope.valB;
+                },
+                function listener(newVal, oldVal, scope) {
+                    scope.valA++;
+                }
+            );
+
+            scope.$watch(
+                function watcher() {
+                    return scope.valA;
+                },
+                function listener(newVal, oldVal, scope) {
+                    scope.valB++;
+                }
+            );
+
+            expect((function() { scope.$digest(); })).toThrow();
+        });
+
+        it('ends the digest when the last watch is clean', function() {
+            scope.array = _.range(100);
+            var watchExecutions = 0;
+
+            _.times(100, function(i) {
+                scope.$watch(
+                    function watch(scope) {
+                        watchExecutions++;
+                        return scope.array[i];
+                    },
+                    function listender(newVal, oldVal, scope) {
+
+                    });
+            });
+
+            scope.$digest();
+            expect(watchExecutions).toBe(200);
+
+            scope.array[0] = 420;
+            scope.$digest();
+            expect(watchExecutions).toBe(301);
+        });
+
+        it("does not end digest so that new watches are not run", function() {
+            scope.aValue = 'abc';
+            scope.counter = 0;
+
+            scope.$watch(
+                function(scope) {
+                    return scope.aValue;
+                },
+                function(newValue, oldValue, scope) {
+                    scope.$watch(
+                        function(scope) {
+                            return scope.aValue;
+                        },
+                        function(newValue, oldValue, scope) {
+                            scope.counter++;
+                        }
+                    );
+                }
+            );
+            scope.$digest();
+            expect(scope.counter).toBe(1);
+        });
+
     });
 
 })();
