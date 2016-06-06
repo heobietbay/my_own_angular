@@ -4,18 +4,37 @@
 // Since js function equals nothing BUT ITSELF, we can create and use a dum function as an initial value.
 function initVal() {}
 
-function Scope() {
+function lastDirtyWatchInitVal() {}
 
+function Scope() {
     this.$$watchers = [];
-    this.$$lastDirtyWatch = function(){};
 }
 
-Scope.prototype.$watch = function(watchFn, listenerFn) {
+Scope.prototype.$watch = function(watchFn, listenerFn, deepCompare) {
+    // Give lastDirtyWatch an initial value
+    this.$$lastDirtyWatch = lastDirtyWatchInitVal;
     this.$$watchers.push({
         watchFn: watchFn,
         listenerFn: listenerFn,
-        last: initVal
+        last: initVal,
+        deepCompare: !!deepCompare
     });
+};
+
+Scope.prototype.$digest = function() {
+    var dirty;
+    var maxDigestIteration = 10;
+    do {
+        dirty = this.$$digestOnce();
+        maxDigestIteration--;
+
+        if (dirty && maxDigestIteration === 0) {
+            throw "10 iteration for digesting reached.";
+        }
+    }
+    while (dirty);
+    // reset lastDirtyWatch
+    this.$$lastDirtyWatch = lastDirtyWatchInitVal;
 };
 
 Scope.prototype.$$digestOnce = function() {
@@ -24,21 +43,19 @@ Scope.prototype.$$digestOnce = function() {
     _.forEach(this.$$watchers, function(watcher) {
         newValue = watcher.watchFn(self);
         oldValue = watcher.last;
-        if (newValue !== oldValue) {
+        if ( !self.$$areEqual(newValue,oldValue,watcher.deepCompare) ) {
             dirty = true;
             self.$$lastDirtyWatch = watcher;
-            watcher.last = newValue;
+            watcher.last = (watcher.deepCompare ? _.cloneDeep(newValue) : newValue);
             if (typeof watcher.listenerFn === 'function') {
                 watcher.listenerFn(
                     newValue,
                     oldValue === initVal ? newValue : oldValue,
                     self);
             }
-        }
-        else // clean watch encounter
+        } else // clean watch encounter
         {
-            if(self.$$lastDirtyWatch === watcher)
-            {
+            if (self.$$lastDirtyWatch === watcher) {
                 return false;
             }
         }
@@ -46,18 +63,10 @@ Scope.prototype.$$digestOnce = function() {
     return dirty;
 };
 
-Scope.prototype.$digest = function() {
-    var dirty;
-    var maxDigestIteration = 10;
-    this.$$lastDirtyWatch = function(){};
-    do {
-        dirty = this.$$digestOnce();
-        maxDigestIteration--;
-
-        if(dirty && maxDigestIteration === 0 )
-        {
-            throw "10 iteration for digesting reached."; 
-        }
+Scope.prototype.$$areEqual = function(newValue, oldValue, valueEq) {
+    if (valueEq) {
+        return _.isEqual(newValue, oldValue);
+    } else {
+        return newValue === oldValue;
     }
-    while (dirty);
 };

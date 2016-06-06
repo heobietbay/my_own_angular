@@ -166,7 +166,9 @@
                 }
             );
 
-            expect((function() { scope.$digest(); })).toThrow();
+            expect((function() {
+                scope.$digest();
+            })).toThrow();
         });
 
         it('ends the digest when the last watch is clean', function() {
@@ -213,6 +215,26 @@
             );
             scope.$digest();
             expect(scope.counter).toBe(1);
+        });
+
+        it("compares based on value if enabled", function() {
+            scope.aValue = [1, 2, 3];
+            scope.counter = 0;
+            scope.$watch(
+                function(scope) {
+                    return scope.aValue;
+                },
+                function(newValue, oldValue, scope) {
+                    scope.counter++;
+                },
+                true
+            );
+            scope.$digest();
+            expect(scope.counter).toBe(1);
+            
+            scope.aValue.push(4);
+            scope.$digest();
+            expect(scope.counter).toBe(2);
         });
 
     });
