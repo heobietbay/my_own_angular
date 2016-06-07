@@ -231,12 +231,47 @@
             );
             scope.$digest();
             expect(scope.counter).toBe(1);
-            
+
             scope.aValue.push(4);
             scope.$digest();
             expect(scope.counter).toBe(2);
         });
 
+
+        it("correctly handle NaNs", function() {
+            scope.number = 0 / 0; // will be NaN;
+            scope.counter = 0;
+
+            scope.$watch(
+                function(scope) {
+                    return scope.number;
+                },
+                function(newValue, oldValue, scope) {
+                    scope.counter++;
+                }
+            );
+            scope.$digest();
+            expect(scope.counter).toBe(1);
+
+            scope.$digest();
+            expect(scope.counter).toBe(1);
+        });
+
+        it("executes $eval'ed function and returns result", function() {
+            scope.aValue = 42;
+            var result = scope.$eval(function(scope) {
+                return scope.aValue;
+            });
+            expect(result).toBe(42);
+        });
+
+        it("passes the second $eval argument straight through", function() {
+            scope.aValue = 42;
+            var result = scope.$eval(function(scope, arg) {
+                return scope.aValue + arg;
+            }, 2);
+            expect(result).toBe(44);
+        });
     });
 
 })();

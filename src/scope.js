@@ -21,6 +21,10 @@ Scope.prototype.$watch = function(watchFn, listenerFn, deepCompare) {
     });
 };
 
+Scope.prototype.$eval = function(expr, locals) {
+    return expr(this, locals);
+};
+
 Scope.prototype.$digest = function() {
     var dirty;
     var maxDigestIteration = 10;
@@ -43,7 +47,7 @@ Scope.prototype.$$digestOnce = function() {
     _.forEach(this.$$watchers, function(watcher) {
         newValue = watcher.watchFn(self);
         oldValue = watcher.last;
-        if ( !self.$$areEqual(newValue,oldValue,watcher.deepCompare) ) {
+        if (!self.$$areEqual(newValue, oldValue, watcher.deepCompare)) {
             dirty = true;
             self.$$lastDirtyWatch = watcher;
             watcher.last = (watcher.deepCompare ? _.cloneDeep(newValue) : newValue);
@@ -63,10 +67,12 @@ Scope.prototype.$$digestOnce = function() {
     return dirty;
 };
 
-Scope.prototype.$$areEqual = function(newValue, oldValue, valueEq) {
-    if (valueEq) {
+Scope.prototype.$$areEqual = function(newValue, oldValue, deepCompare) {
+    if (deepCompare) {
         return _.isEqual(newValue, oldValue);
     } else {
+        if (typeof newValue === 'number' && typeof oldValue === 'number' && isNaN(newValue) && isNaN(oldValue))
+            return true;
         return newValue === oldValue;
     }
 };
