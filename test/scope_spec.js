@@ -260,18 +260,34 @@
         it("executes $eval'ed function and returns result", function() {
             scope.aValue = 42;
             var result = scope.$eval(function(scope) {
+                console.log(arguments);
                 return scope.aValue;
             });
             expect(result).toBe(42);
         });
 
-        it("passes the second $eval argument straight through", function() {
+        it("passes the second (and more) $eval argument straight through", function() {
             scope.aValue = 42;
             var result = scope.$eval(function(scope, arg) {
+                console.log(arg);
                 return scope.aValue + arg;
             }, 2);
             expect(result).toBe(44);
+
+            result = scope.$eval(function(scope, arg1, arg2) {
+                return scope.aValue + arg1 + arg2;
+            }, 1, 2);
+            expect(result).toBe(45);
+
+            result = scope.$eval(function(scope, arg1, arg2, arg3) {
+                var sum = arg3.reduce(function(a, b) {
+                    return a + b;
+                });
+                return scope.aValue + arg1 + arg2 + sum;
+            }, 1, 2,[0,5]);
+            expect(result).toBe(50);
         });
+
     });
 
 })();
