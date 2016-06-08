@@ -21,12 +21,20 @@ Scope.prototype.$watch = function(watchFn, listenerFn, deepCompare) {
     });
 };
 
+Scope.prototype.$apply = function(expr) {
+    try {
+        return this.$eval(expr);
+    } finally {
+        this.$digest();
+    }
+};
+
 Scope.prototype.$eval = function(expr) {
     // Read more about apply here : https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply
     // for $eval, the arguments is something like this: [expr,arg1,args...]
     // We only want to pass the scope, as well as arg1, arg2 to expr
     // since in $eval, scope is this, we will do something like below
-    return expr.apply(null, [this].concat(Array.prototype.slice.call( arguments,1)));
+    return expr.apply(null, [this].concat(Array.prototype.slice.call(arguments, 1)));
 };
 
 Scope.prototype.$digest = function() {

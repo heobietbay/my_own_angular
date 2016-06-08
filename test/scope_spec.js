@@ -284,8 +284,28 @@
                     return a + b;
                 });
                 return scope.aValue + arg1 + arg2 + sum;
-            }, 1, 2,[0,5]);
+            }, 1, 2, [0, 5]);
             expect(result).toBe(50);
+        });
+
+        it("executes $apply'ed function and starts the digest", function() {
+            scope.aValue = 'someValue';
+            scope.counter = 0;
+            scope.$watch(
+                function(scope) {
+                    return scope.aValue;
+                },
+                function(newValue, oldValue, scope) {
+                    scope.counter++;
+                }
+            );
+            scope.$digest();
+            expect(scope.counter).toBe(1);
+
+            scope.$apply(function(scope) {
+                scope.aValue = 'someOtherValue';
+            });
+            expect(scope.counter).toBe(2);
         });
 
     });
