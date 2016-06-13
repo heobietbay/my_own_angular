@@ -44,7 +44,16 @@ Scope.prototype.$apply = function(expr) {
 };
 
 Scope.prototype.$evalAsync = function(expr) {
-  this.$$asyncQueue.push({scope:this, expression: expr});
+    // If there is no digest - indicating by $$phase, and the current async queue is empty, we schedule a digest
+    var self = this;
+    if (!self.$$phase && !self.$$asyncQueue.length) {
+        setTimeout(function() {
+            if (self.$$asyncQueue.length) {
+                self.$digest();
+            }
+        }, 0); // put the callback to the event loop, google 'What the heck is the event loop anyway - Philip Roberts'
+    }
+    this.$$asyncQueue.push({ scope: this,expression: expr });
 };
 
 Scope.prototype.$eval = function(expr) {
