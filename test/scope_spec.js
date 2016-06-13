@@ -399,7 +399,6 @@
             expect(scope.phaseInListenerFunction).toBe('$digest');
             expect(scope.phaseInApplyFunction).toBe('$apply');
         });
-
         it('allow async apply with $applyAsync', function(done) {
             scope.counter = 0;
 
@@ -446,7 +445,30 @@
                 done();
             }, 50);
         });
-        
+        it('schedules a digest in $evalAsync',function(done){
+          scope.aValue = 'abc';
+          scope.counter = 0;
+
+          scope.$watch(
+            function watchExpr(scope) {
+              return scope.aValue;
+            },
+            function listener(newValue,oldValue,scope) {
+              scope.counter++;
+            });
+
+          scope.$evalAsync(function(scope){
+
+          });
+
+          expect(scope.counter).toBe(0);
+
+          setTimeout(
+            function() {
+                expect(scope.counter).toBe(1);
+                done();
+            }, 50);
+        });
     });
 
 })();
